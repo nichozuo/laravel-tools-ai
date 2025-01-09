@@ -1,0 +1,26 @@
+{
+  "name": "zuoge/laravel-tools-ai",
+  "description": "Laravel tools for AI",
+  "type": "library",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Zuoge\\LaravelToolsAi\\": "src/"
+    }
+  },
+  "require": {
+    "php": "^8.3",
+    "laravel/framework": "^11.31",
+    "phpdocumentor/reflection-docblock": "^5.6"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^11.0"
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Zuoge\\LaravelToolsAi\\ToolsAiServiceProvider"
+      ]
+    }
+  }
+}

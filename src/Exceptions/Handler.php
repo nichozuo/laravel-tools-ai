@@ -71,7 +71,6 @@ class Handler extends ExceptionHandler
     private function handleApiException(Throwable $e): JsonResponse
     {
         $debug = config('app.debug');
-        dd($e);
 
         // 获取异常配置
         $defaults = [
@@ -130,6 +129,10 @@ class Handler extends ExceptionHandler
         // 在开发环境下添加详细错误信息
         if ($debug) {
             $trace = collect($e->getTrace())->map(function ($trace) {
+                // 过滤掉一些不必要的信息
+                if (strpos($trace['file'], 'laravel/framework') !== false) {
+                    return null;
+                }
                 return [
                     'file' => $trace['file'] ?? null,
                     'line' => $trace['line'] ?? null,
@@ -138,7 +141,7 @@ class Handler extends ExceptionHandler
                     'type' => $trace['type'] ?? null,
                     'args' => isset($trace['args']) ? $this->formatArgs($trace['args']) : null,
                 ];
-            })->all();
+            })->filter()->all();
 
             // 获取请求信息
             $request = request();

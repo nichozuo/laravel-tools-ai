@@ -187,7 +187,7 @@ class RouterCollection
     protected function fillDocInfo(ControllerActionModel $actionModel, $docBlock): void
     {
         // 解析HTTP方法
-        $methodTag = $docBlock->getTagsByName('method');
+        $methodTag = $docBlock->getTagsByName('@method');
         $actionModel->method = !empty($methodTag) ? strtoupper((string) $methodTag[0]) : 'POST';
 
         // 解析标题

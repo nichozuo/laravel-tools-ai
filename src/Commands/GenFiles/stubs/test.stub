@@ -1,0 +1,19 @@
+<?php
+
+namespace {{ namespace }};
+
+
+use Tests\TestCase;
+
+/**
+ * {{ appFullClassName }}
+ */
+class {{ modelName }}ControllerTest extends TestCase
+{
+    protected function setUp(): void
+    {
+        parent::setUp();
+    }
+
+    {{ functions }}
+}

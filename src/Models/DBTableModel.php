@@ -24,6 +24,21 @@ class DBTableModel
     public string $comment = '';
 
     /**
+     * 表是否包含 api token
+     */
+    public bool $hasApiToken = false;
+
+    /**
+     * 表是否包含角色
+     */
+    public bool $hasRoles = false;
+
+    /**
+     * 表是否包含节点
+     */
+    public bool $hasNodeTrait = false;
+
+    /**
      * 表的所有字段集合
      * @var Collection<DBTableColumnModel>
      */

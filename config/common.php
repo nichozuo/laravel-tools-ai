@@ -1,16 +1,32 @@
 <?php
 
 return [
-    'skip_tables' => [
-        'cache',
-        'cache_locks',
-        'failed_jobs',
-        'job_batches',
-        'jobs',
-        'migrations',
-        'password_reset_tokens',
-        'personal_access_tokens',
-        'sessions',
+    // 表集合
+    'db_collection' => [
+        // 包含 HasApiTokens 的表名 
+        'has_api_token' => [
+            'admins'
+        ],
+        // 包含 HasRoles 的表名
+        'has_roles' => [
+            'admins'
+        ],
+        // 包含 NodeTrait 的表名
+        'has_node_trait' => [
+            'sys_permissions'
+        ],
+        // 跳过表名
+        'skip_tables' => [
+            'cache',
+            'cache_locks',
+            'failed_jobs',
+            'job_batches',
+            'jobs',
+            'migrations',
+            'password_reset_tokens',
+            'personal_access_tokens',
+            'sessions',
+        ]
     ],
     'pagination' => [
         // 分页大小选项

@@ -11,7 +11,8 @@ use Zuoge\LaravelToolsAi\Exceptions\Handler;
 use Throwable;
 use Zuoge\LaravelToolsAi\Http\Middleware\JsonResponseMiddleware;
 use Illuminate\Database\Query\Builder;
-
+use Zuoge\LaravelToolsAi\Commands\GenFiles\GenMigrationFileCommand;
+use Zuoge\LaravelToolsAi\Commands\GenFiles\GenModelFileCommand;
 class ToolsAiServiceProvider extends ServiceProvider
 {
     /**
@@ -50,6 +51,12 @@ class ToolsAiServiceProvider extends ServiceProvider
 
         // 配置QueryBuilder
         $this->bootQueryBuilder();
+
+        // 注册命令
+        $this->commands([
+            GenMigrationFileCommand::class,
+            GenModelFileCommand::class,
+        ]);
     }
 
     /**

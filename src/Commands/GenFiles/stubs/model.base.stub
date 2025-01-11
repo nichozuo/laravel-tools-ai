@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Models;
+
+{{ importClasses }}
+
+/**
+{{ properties }}
+ */
+class {{ className }} extends Base
+{
+    {{ useTraits }}
+
+    protected $table = '{{ tableName }}';
+    protected string $comment = '{{ comment }}';
+
+    protected $fillable = [{{ fillable }}];
+
+    protected $hidden = [{{ hidden }}];
+    
+    protected $casts = [{{ casts }}];
+    
+    {{ relations }}
+}

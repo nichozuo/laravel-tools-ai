@@ -28,6 +28,12 @@ class DBTableColumnModel
     public string $type = '';
 
     /**
+     * 字段类型在属性中的表示
+     * 比如：bigint 是 numberic
+     */
+    public string $typeInProperty = '';
+
+    /**
      * 排序规则
      * 用于 char、varchar、text 等类型
      */

@@ -34,24 +34,15 @@ class DBTableCollection
      */
     protected ?Collection $collection = null;
 
-    protected array $skipTables = [];
+    protected array $dbCollectionConfig = [];
 
     /**
      * 构造函数
      */
     protected function __construct()
     {
-        $this->skipTables = config('common.skip_tables', [
-            'cache',
-            'cache_locks',
-            'failed_jobs',
-            'job_batches',
-            'jobs',
-            'migrations',
-            'password_reset_tokens',
-            'personal_access_tokens',
-            'sessions',
-        ]);
+        // 初始化 dbCollectionConfig
+        $this->dbCollectionConfig = config('common.db_collection', []);
     }
 
     /**
@@ -91,7 +82,7 @@ class DBTableCollection
 
         // 遍历每个表
         foreach ($tables as $table) {
-            if (!in_array($table['name'], $this->skipTables)) {
+            if (!in_array($table['name'], $this->dbCollectionConfig['skip_tables'] ?? [])) {
                 $collection->push($this->parseTable($table));
             }
         }
@@ -117,6 +108,11 @@ class DBTableCollection
             $model->columns->push($this->parseColumn($column));
         }
 
+        // 从构造函数中初始化的配置中读取并设置新增的字段
+        $model->hasApiToken = in_array($table['name'], $this->dbCollectionConfig['has_api_token'] ?? []);
+        $model->hasRoles = in_array($table['name'], $this->dbCollectionConfig['has_roles'] ?? []);
+        $model->hasNodeTrait = in_array($table['name'], $this->dbCollectionConfig['has_node_trait'] ?? []);
+
         return $model;
     }
 
@@ -131,6 +127,7 @@ class DBTableCollection
         $model->name = $column['name'];
         $model->typeName = $column['type_name'];
         $model->type = $column['type'];
+        $model->typeInProperty = $this->getTypeInProperty($column['type_name']);
         $model->collation = $column['collation'] ?? null;
         $model->nullable = $column['nullable'];
         $model->default = $column['default'] ?? null;
@@ -139,5 +136,22 @@ class DBTableCollection
         $model->generation = $column['generation'] ?? null;
 
         return $model;
+    }
+
+    /**
+     * 获取字段类型在属性中的表示
+     */
+    protected function getTypeInProperty(string $typeName): string
+    {
+        switch ($typeName) {
+            case 'bigint':
+            case 'int':
+            case 'tinyint':
+            case 'smallint':
+            case 'mediumint':
+                return 'numeric';
+            default:
+                return 'string';
+        }
     }
 }

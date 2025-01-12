@@ -177,7 +177,12 @@ class GenModelFileCommand extends Command
                 $hidden[] = "'{$column->name}'";
             }
         }
-        return implode('\', \'', $hidden);
+        
+        if (empty($hidden)) {
+            return '';
+        }
+        
+        return "protected \$hidden = [" . implode(', ', $hidden) . "];";
     }
 
     /**
@@ -189,12 +194,17 @@ class GenModelFileCommand extends Command
         foreach ($table->columns as $column) {
             if ($column->type === 'json') {
                 $casts[] = "'{$column->name}' => 'array'";
-            } elseif ($column->type === 'datetime') {
+            } elseif ($column->type === 'datetime' || $column->type === 'timestamp') {
                 $casts[] = "'{$column->name}' => 'datetime'";
             }
             // TODO 如果是Enum类型，则需要获取Enum的值
         }
-        return implode(",\n        ", $casts);
+        
+        if (empty($casts)) {
+            return '';
+        }
+        
+        return "protected \$casts = [\n\t\t" . implode(",\n\t\t", $casts) . "\n\t];";
     }
 
     private function getRelations($table)

@@ -216,17 +216,11 @@ class RouterCollection
      */
     protected function parseMethodRequestBody(ReflectionMethod $method): array
     {
-        $requestBody = [
-            'type' => 'object',
-            'properties' => [],
-            'required' => []
-        ];
-
         $methodContent = $this->getMethodContent($method);
-        if (!$validationRules = $this->extractValidationRules($methodContent)) {
-            return $requestBody;
+        $validationRules = $this->extractValidationRules($methodContent);
+        if (!$validationRules) {
+            return [];
         }
-
         return $this->parseValidationRules($validationRules);
     }
 
@@ -270,7 +264,7 @@ class RouterCollection
         ];
 
         preg_match_all(
-            "/'([^']+)'\s*=>\s*\[(.*?)](?:\s*,\s*(?:#|\/\/)\s*(.+))?/",
+            "/'([^']+)'\s*=>\s*'([^']+)'(?:\s*,\s*(?:#|\/\/)\s*(.+))?/m",
             $validationRules,
             $paramMatches,
             PREG_SET_ORDER
@@ -278,13 +272,13 @@ class RouterCollection
 
         foreach ($paramMatches as $match) {
             $fieldName = $match[1];
-            $rules = array_map('trim', explode(',', $match[2]));
+            $rules = array_map('trim', explode('|', $match[2]));
             $comment = $match[3] ?? '';
 
             $property = [
                 'type' => $this->determineParameterType($rules),
                 'description' => trim($comment),
-                'required' => in_array("'required'", $rules)
+                'required' => in_array('required', $rules)
             ];
 
             if ($property['required']) {

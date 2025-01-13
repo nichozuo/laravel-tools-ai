@@ -110,7 +110,7 @@ class GenControllerFileCommand extends Command
 
             // 是否可空：1是否nullable，2是否有default
             $required = $column->nullable || $column->default ? 'nullable' : 'required';
-            $validateString[] = "'$column->name' => '$required|$column->typeName', # $column->comment";
+            $validateString[] = "'$column->name' => '$required|$column->typeInProperty', # $column->comment";
         }
         return implode("\n\t\t\t", $validateString);
     }

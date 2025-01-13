@@ -9,8 +9,9 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\ServiceProvider;
 use Zuoge\LaravelToolsAi\Exceptions\Handler;
 use Zuoge\LaravelToolsAi\Http\Middleware\JsonResponseMiddleware;
-use Illuminate\Database\Query\Builder;
 use Zuoge\LaravelToolsAi\Commands\GenFiles;
+use Zuoge\LaravelToolsAi\Commands\Dump;
+use Zuoge\LaravelToolsAi\Macros\BuilderMacros;
 use Throwable;
 
 class ToolsAiServiceProvider extends ServiceProvider
@@ -53,7 +54,7 @@ class ToolsAiServiceProvider extends ServiceProvider
         $this->bootMiddlewareHandling();
 
         // 配置QueryBuilder
-        $this->bootQueryBuilder();
+        BuilderMacros::boot();
 
         // 注册命令
         $this->commands([
@@ -61,6 +62,8 @@ class ToolsAiServiceProvider extends ServiceProvider
             GenFiles\GenModelFileCommand::class,
             GenFiles\GenAllModelFileCommand::class,
             GenFiles\GenControllerFileCommand::class,
+
+            Dump\DumpTableCommand::class,
         ]);
     }
 
@@ -98,27 +101,5 @@ class ToolsAiServiceProvider extends ServiceProvider
 
         // 将中间件添加到 API 组
         // $router->pushMiddlewareToGroup('api', 'json.response');
-    }
-
-    /**
-     * 配置QueryBuilder
-     */
-    protected function bootQueryBuilder(): void
-    {
-        // 模糊查询宏
-        Builder::macro('whenWhereLike', function ($request, $key, $column = null) {
-            $column = $column ?? $key;
-            return $this->when(isset($request[$key]), function ($query) use ($request, $key, $column) {
-                $query->where($column, 'like', '%' . $request[$key] . '%');
-            });
-        });
-
-        // 精确查询宏
-        Builder::macro('whenWhere', function ($request, $key, $column = null) {
-            $column = $column ?? $key;
-            return $this->when(isset($request[$key]), function ($query) use ($request, $key, $column) {
-                $query->where($column, $request[$key]);
-            });
-        });
     }
 }

@@ -130,7 +130,7 @@ class Handler extends ExceptionHandler
         if ($debug) {
             $trace = collect($e->getTrace())->map(function ($trace) {
                 // 过滤掉一些不必要的信息
-                if (strpos($trace['file'], 'laravel/framework') !== false) {
+                if (str_contains($trace['file'], 'laravel/framework')) {
                     return null;
                 }
                 return [

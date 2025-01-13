@@ -6,6 +6,7 @@ namespace Zuoge\LaravelToolsAi\Services;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
+use ReflectionException;
 use Zuoge\LaravelToolsAi\Collections\RouterCollection;
 use Zuoge\LaravelToolsAi\Models\ControllerModel;
 use Zuoge\LaravelToolsAi\Models\ControllerActionModel;
@@ -21,6 +22,7 @@ class RouterService
 {
     /**
      * 注册所有模块的路由
+     * @throws ReflectionException
      */
     public static function AutoRegister(): void
     {

@@ -23,7 +23,7 @@ class GenMigrationFileCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): void
     {
         $tableName = str()->of($this->argument('table_name'))
             ->snake()

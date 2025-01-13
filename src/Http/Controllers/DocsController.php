@@ -46,7 +46,7 @@ class DocsController extends Controller
         // 获取所有数据库信息
         $routes = RouterCollection::getInstance()->getCollection();
         $enums = EnumCollection::getInstance()->getCollection();
-        $db = DBTableCollection::getInstance()->getCollection();
+        $db = DBTableCollection::getInstance()->getCollection()->tables;
 
 
         // 构建OpenAPI基础信息

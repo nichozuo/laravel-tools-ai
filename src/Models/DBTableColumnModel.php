@@ -29,7 +29,7 @@ class DBTableColumnModel
 
     /**
      * 字段类型在属性中的表示
-     * 比如：bigint 是 numberic
+     * 比如：bigint 是 numeric
      */
     public string $typeInProperty = '';
 

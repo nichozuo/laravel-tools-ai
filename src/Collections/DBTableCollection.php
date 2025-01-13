@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Zuoge\LaravelToolsAi\Collections;
 
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
+use Zuoge\LaravelToolsAi\Models\DBModel;
 use Zuoge\LaravelToolsAi\Models\DBTableColumnModel;
 use Zuoge\LaravelToolsAi\Models\DBTableModel;
+use Illuminate\Support\Str;
 
 /**
  * 数据库表集合类
@@ -30,14 +31,19 @@ class DBTableCollection
 
     /**
      * 内存中的集合数据
-     * @var Collection|null
+     * @var DBModel|null
      */
-    protected ?Collection $collection = null;
+    protected ?DBModel $dbModel = null;
 
+    /**
+     * 数据库集合配置
+     * @var array
+     */
     protected array $dbCollectionConfig = [];
 
     /**
      * 构造函数
+     * 初始化数据库集合配置
      */
     protected function __construct()
     {
@@ -61,33 +67,38 @@ class DBTableCollection
      * 获取数据库表集合数据
      * 使用懒加载模式，仅在首次调用时初始化数据
      */
-    public function getCollection(): Collection
+    public function getCollection(): DBModel
     {
-        if ($this->collection === null) {
-            $this->collection = $this->init();
+        if ($this->dbModel === null) {
+            $this->dbModel = $this->init();
         }
-        return $this->collection;
+        return $this->dbModel;
     }
 
     /**
      * 初始化数据库表集合
      * 获取数据库中所有表的信息
      */
-    protected function init(): Collection
+    protected function init(): DBModel
     {
-        $collection = collect();
+        $dbModel = new DBModel();
 
         // 获取所有表名
         $tables = Schema::getTables();
+        $dbModel->tableNames = array_column($tables, 'name');
 
         // 遍历每个表
         foreach ($tables as $table) {
+            // 跳过配置中指定的表
             if (!in_array($table['name'], $this->dbCollectionConfig['skip_tables'] ?? [])) {
-                $collection->push($this->parseTable($table));
+                $dbModel->tables->push($this->parseTable($table));
             }
         }
 
-        return $collection;
+        // 解析表之间的关系
+        $this->parseRelations($dbModel);
+
+        return $dbModel;
     }
 
     /**
@@ -99,8 +110,8 @@ class DBTableCollection
         $model = new DBTableModel();
         $model->name = $table['name'] ?? '';
         $model->comment = $table['comment'] ?? '';
-        $model->foreignKeys = Schema::getForeignKeys($table['name']);
         $model->indexes = Schema::getIndexes($table['name']);
+        // $model->foreignKeys = Schema::getForeignKeys($table['name']);
 
         // 获取表的所有字段
         $columns = Schema::getColumns($table['name']);
@@ -140,18 +151,53 @@ class DBTableCollection
 
     /**
      * 获取字段类型在属性中的表示
+     * 根据字段类型名称返回对应的属性类型
      */
     protected function getTypeInProperty(string $typeName): string
     {
-        switch ($typeName) {
-            case 'bigint':
-            case 'int':
-            case 'tinyint':
-            case 'smallint':
-            case 'mediumint':
-                return 'numeric';
-            default:
-                return 'string';
+        return match ($typeName) {
+            'bigint', 'int', 'tinyint', 'smallint', 'mediumint' => 'numeric',
+            default => 'string',
+        };
+    }
+
+    /**
+     * 解析表之间的关系
+     * 根据字段名和类型推断表之间的关系
+     */
+    protected function parseRelations(DBModel $dbModel): void
+    {
+        // 解析表之间的关系
+        foreach ($dbModel->tables as $table) {
+            foreach ($table->columns as $column) {
+                // 检查字段名是否以 '_id' 结尾且类型为 'bigint'
+                if (Str::endsWith($column->name, '_id') && $column->typeName === 'bigint') {
+                    $oneTableName = Str::of($column->name)->replace('_id', '')->singular()->plural();
+                    if (!in_array($oneTableName->toString(), $dbModel->tableNames)) {
+                        continue;
+                    }
+                    $manyTableName = Str::of($table->name);
+
+                    // 添加 belongsTo 关系
+                    $dbModel->belongsTo[$table->name][] = [
+                        'name' => $oneTableName->singular()->toString(),
+                        'related' => $oneTableName->camel()->ucfirst()->toString() . '::class',
+                        'foreignKey' => $column->name,
+                        'ownerKey' => 'id',
+                    ];
+
+                    // 添加 hasMany 关系
+                    $dbModel->hasMany[$oneTableName->toString()][] = [
+                        'name' => $manyTableName->toString(),
+                        'related' => $manyTableName->camel()->ucfirst()->toString() . '::class',
+                        'foreignKey' => $column->name,
+                        'localKey' => 'id',
+                    ];
+
+                    // 调试输出
+                    // dd($dbModel->belongsTo, $dbModel->hasMany);
+                }
+            }
         }
     }
 }

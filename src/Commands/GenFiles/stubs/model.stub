@@ -2,9 +2,18 @@
 
 namespace App\Models;
 
-use App\Models\Base\Base{{ className }};
+{{ importClasses }}
 
-class {{ className }} extends Base{{ className }}
+/**
+{{ properties }}
+ */
+class {{ className }} extends Base
 {
-
+    {{ useTraits }}
+    protected string $table = '{{ tableName }}';
+    protected string $comment = '{{ comment }}';
+    protected array $fillable = [{{ fillable }}];
+    {{ hidden }}
+    {{ casts }}
+    {{ relations }}
 }

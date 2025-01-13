@@ -26,6 +26,9 @@ return [
             'password_reset_tokens',
             'personal_access_tokens',
             'sessions',
+            'sys_model_has_permissions',
+            'sys_model_has_roles',
+            'sys_role_has_permissions'
         ]
     ],
     'pagination' => [

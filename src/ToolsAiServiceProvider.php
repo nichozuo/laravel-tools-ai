@@ -8,11 +8,11 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\ServiceProvider;
 use Zuoge\LaravelToolsAi\Exceptions\Handler;
-use Throwable;
 use Zuoge\LaravelToolsAi\Http\Middleware\JsonResponseMiddleware;
 use Illuminate\Database\Query\Builder;
-use Zuoge\LaravelToolsAi\Commands\GenFiles\GenMigrationFileCommand;
-use Zuoge\LaravelToolsAi\Commands\GenFiles\GenModelFileCommand;
+use Zuoge\LaravelToolsAi\Commands\GenFiles;
+use Throwable;
+
 class ToolsAiServiceProvider extends ServiceProvider
 {
     /**
@@ -33,6 +33,9 @@ class ToolsAiServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // register helpers
+        require_once(__DIR__ . '/helpers.php');
+
         // 发布配置文件
         $this->publishes([
             __DIR__ . '/../config/common.php' => config_path('common.php'),
@@ -54,8 +57,10 @@ class ToolsAiServiceProvider extends ServiceProvider
 
         // 注册命令
         $this->commands([
-            GenMigrationFileCommand::class,
-            GenModelFileCommand::class,
+            GenFiles\GenMigrationFileCommand::class,
+            GenFiles\GenModelFileCommand::class,
+            GenFiles\GenAllModelFileCommand::class,
+            GenFiles\GenControllerFileCommand::class,
         ]);
     }
 

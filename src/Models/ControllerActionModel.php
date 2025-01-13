@@ -66,7 +66,7 @@ class ControllerActionModel
     /**
      * 路由请求参数
      * 从方法体的代码里面的 $params = request()->validate([...]) 获取
-     * 按照openapiv3的schema object的定义的结构，解析成对应的对象数组
+     * 按照openapiV3的schema object的定义的结构，解析成对应的对象数组
      * @var array<string, array<string, mixed>>
      */
     public array $requestBody = [

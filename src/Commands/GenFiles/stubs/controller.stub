@@ -1,17 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace {{ namespace }};
 
 use App\Models\{{ modelName }};
 use Exception;
 
 /**
- * @intro {{ comment }}
+ * @title {{ comment }}
  */
 class {{ modelName }}Controller extends BaseController
 {
     /**
-     * @intro 列表
+     * @title 列表
      * @return mixed
      * @throws Exception
     */
@@ -26,7 +28,7 @@ class {{ modelName }}Controller extends BaseController
     }
 
     /**
-     * @intro 添加
+     * @title 添加
      * @return void
      */
     public function store(): void
@@ -39,7 +41,7 @@ class {{ modelName }}Controller extends BaseController
     }
 
     /**
-     * @intro 修改
+     * @title 修改
      * @return void
      */
     public function update(): void
@@ -53,19 +55,7 @@ class {{ modelName }}Controller extends BaseController
     }
 
     /**
-     * @intro 查看
-     * @return {{ modelName }}
-     */
-    public function show(): {{ modelName }}
-    {
-        $params = request()->validate([
-            'id' => 'required|integer', # id
-        ]);
-        return {{ modelName }}::getById($params['id']);
-    }
-
-    /**
-     * @intro 删除
+     * @title 删除
      * @return void
      */
     public function delete(): void

@@ -49,11 +49,6 @@ class DBTableModel
      */
     public array $indexes = [];
 
-    /**
-     * 外键集合
-     */
-    public array $foreignKeys = [];
-
     public function __construct()
     {
         $this->columns = collect();

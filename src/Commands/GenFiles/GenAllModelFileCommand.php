@@ -26,8 +26,7 @@ class GenAllModelFileCommand extends Command
     {
         $dbModel = DBTableCollection::getInstance()->getCollection();
         foreach ($dbModel->tables as $table) {
-            $this->call('gd', ['table_name' => $table->name]);
+            $this->call('gd', ['name' => $table->name, '-f' => true]);
         }
-        $this->info('生成完成');
     }
 }

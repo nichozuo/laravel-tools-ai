@@ -66,6 +66,14 @@ class RouterCollection
         return $this->collection;
     }
 
+    public function getByControllerClass(string $controllerClass): ?ControllerModel
+    {
+        $route = $this->getCollection()->where('controllerClass', $controllerClass)->first();
+        if (!$route)
+            ee("Route $controllerClass not found!");
+        return $route;
+    }
+
     /**
      * 初始化路由集合
      * @return Collection<ControllerModel>
@@ -221,6 +229,8 @@ class RouterCollection
         if (!$validationRules) {
             return [];
         }
+        // 去掉前面被注释的行
+        $validationRules = preg_replace('/^\s*\/\/.*$/m', '', $validationRules);
         return $this->parseValidationRules($validationRules);
     }
 
@@ -269,7 +279,6 @@ class RouterCollection
             $paramMatches,
             PREG_SET_ORDER
         );
-
         foreach ($paramMatches as $match) {
             $fieldName = $match[1];
             $rules = array_map('trim', explode('|', $match[2]));

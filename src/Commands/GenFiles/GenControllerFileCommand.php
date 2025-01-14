@@ -3,20 +3,18 @@
 namespace Zuoge\LaravelToolsAi\Commands\GenFiles;
 
 use Exception;
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\File;
 use Zuoge\LaravelToolsAi\Collections\DBTableCollection;
 use Zuoge\LaravelToolsAi\Models\DBTableModel;
 use Illuminate\Support\Str;
 
-class GenControllerFileCommand extends Command
+class GenControllerFileCommand extends BaseGenFileCommand
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'gc {name} {--force}';
+    protected $name = 'gc';
 
     /**
      * The console command description.
@@ -35,11 +33,7 @@ class GenControllerFileCommand extends Command
      */
     public function handle(): void
     {
-        $name = $this->argument('name');
-        if (!$name)
-            ee("名称必须填写");
-
-        $force = $this->option('force');
+        list($name, $force) = $this->getNameAndForce();
 
         $modulesName = Str::of($name)->explode('/')->map(function ($item) {
             return Str::of($item)->studly()->toString();
@@ -51,53 +45,16 @@ class GenControllerFileCommand extends Command
 
         $namespace = 'App\\Modules\\' . implode('\\', $modulesName);
 
-        $filePath = app_path('Modules/' . implode('/', $modulesName) . '/' . $modelName . 'Controller.php');
-        if (File::exists($filePath) && !$force)
-            ee("文件已存在，如需覆盖，请加 --force 参数");
+        $table = DBTableCollection::getInstance()->getByName($tableName);
 
-        $dbModel = DBTableCollection::getInstance()->getCollection();
+        $replaces = [
+            '{{ namespace }}' => $namespace,
+            '{{ modelName }}' => $modelName,
+            '{{ comment }}' => $table->comment,
+            '{{ validateString }}' => $this->getValidateString($table),
+        ];
 
-        $table = $dbModel->tables->where('name', $tableName)->first();
-        if (!$table)
-            ee("Table $tableName not found!");
-
-        // 3. 生成基础模型文件
-        $this->generateControllerFile($table, $namespace, $modelName, $filePath);
-
-        $this->info($filePath);
-    }
-
-    private function generateControllerFile(DBTableModel $table, string $namespace, string $modelName, string $filePath): void
-    {
-        // 读取控制器模板
-        $stub = File::get(__DIR__ . '/stubs/controller.stub');
-        $validateString = $this->getValidateString($table);
-
-        // 替换内容
-        $content = str_replace(
-            [
-                '{{ namespace }}',
-                '{{ modelName }}',
-                '{{ comment }}',
-                '{{ validateString }}'
-            ],
-            [
-                $namespace,
-                $modelName,
-                $table->name,
-                $validateString
-            ],
-            $stub
-        );
-
-        // 确保目录存在
-        // $directory = app_path('Modules/' . str_replace('\\', '/', $namespace));
-        // if (!File::exists($directory)) {
-        //     File::makeDirectory($directory, 0755, true);
-        // }
-
-        // 写入文件
-        File::put($filePath, $content);
+        $this->GenFile('controller.stub', $replaces, $namespace, $modelName . 'Controller', $force);
     }
 
     private function getValidateString(DBTableModel $table): string

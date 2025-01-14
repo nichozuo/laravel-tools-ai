@@ -30,11 +30,12 @@ class JsonResponseMiddleware
         if ($data instanceof LengthAwarePaginator) {
             return response()->json([
                 'success' => true,
-                'data' => [
-                    'items' => $data->items(),
-                    'total' => $data->total(),
-                    'page' => $data->currentPage(),
+                'data' => $data->items(),
+                'meta' => [
+                    'current_page' => $data->currentPage(),
+                    'last_page' => $data->lastPage(),
                     'per_page' => $data->perPage(),
+                    'total' => $data->total(),
                 ],
             ]);
         }

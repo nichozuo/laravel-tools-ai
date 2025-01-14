@@ -55,7 +55,7 @@ class BuilderMacros
      * @param string $key 键名
      * @return bool
      */
-    private static function isValidParam(array $params, string $key): bool
+    public static function isValidParam(array $params, string $key): bool
     {
         return array_key_exists($key, $params) && $params[$key] !== null && $params[$key] !== '';
     }
@@ -71,7 +71,7 @@ class BuilderMacros
             $query = $this;
 
             return $query->when(
-                static::isValidParam($params, $key),
+                BuilderMacros::isValidParam($params, $key),
                 fn($q) => $q->where($field ?? $key, $params[$key])
             );
         };
@@ -88,7 +88,7 @@ class BuilderMacros
             $query = $this;
 
             return $query->when(
-                static::isValidParam($params, $key),
+                BuilderMacros::isValidParam($params, $key),
                 fn($q) => $q->where($field ?? $key, 'like', "%{$params[$key]}%")
             );
         };
@@ -104,7 +104,7 @@ class BuilderMacros
             /** @var QueryBuilder|EloquentBuilder $query */
             $query = $this;
             return $query->when(
-                static::isValidParam($params, $key),
+                BuilderMacros::isValidParam($params, $key),
                 fn() => $query->where(function ($q) use ($params, $key, $fields) {
                     foreach ($fields as $field) {
                         $q->orWhere($field, 'like', "%{$params[$key]}%");
@@ -261,7 +261,7 @@ class BuilderMacros
      */
     private static function unique(): \Closure
     {
-        return function (array $params, array $keys, string $label = null, string $field = 'id', ?int $keyIndex = 0) {
+        return function (array $params, array $keys, ?string $label = null, string $field = 'id', ?int $keyIndex = 0) {
             /** @var QueryBuilder|EloquentBuilder $query */
             $query = $this;
             $model = $query->where(Arr::only($params, $keys))->first();

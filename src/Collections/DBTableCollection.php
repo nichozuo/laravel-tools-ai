@@ -75,6 +75,14 @@ class DBTableCollection
         return $this->dbModel;
     }
 
+    public function getByName(string $name): DBTableModel
+    {
+        $table = $this->getCollection()->tables->where('name', $name)->first();
+        if (!$table)
+            ee("Table $name not found!");
+        return $table;
+    }
+
     /**
      * 初始化数据库表集合
      * 获取数据库中所有表的信息

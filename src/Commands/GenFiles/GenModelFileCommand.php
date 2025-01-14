@@ -2,20 +2,18 @@
 
 namespace Zuoge\LaravelToolsAi\Commands\GenFiles;
 
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\File;
 use Zuoge\LaravelToolsAi\Collections\DBTableCollection;
 use Zuoge\LaravelToolsAi\Models\DBModel;
 use Zuoge\LaravelToolsAi\Models\DBTableModel;
 
-class GenModelFileCommand extends Command
+class GenModelFileCommand extends BaseGenFileCommand
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'gd {table_name}';
+    protected $name = 'gd';
 
     /**
      * The console command description.
@@ -32,81 +30,31 @@ class GenModelFileCommand extends Command
      */
     public function handle(): void
     {
-        // 1. 获取表名并处理
-        $tableName = str()->of($this->argument('table_name'))
-            ->snake()
-            ->singular()
-            ->plural();
+        list($name, $force) = $this->getNameAndForce();
+
+        $tableName = str()->of($name)->snake()->singular()->plural();
 
         $className = str()->of($tableName)->studly();
 
-        $namespace = 'App\\Models\\' . $className;
+        $namespace = 'App\\Models';
 
-        // 2. 获取表信息
         $dbModel = DBTableCollection::getInstance()->getCollection();
-        $table = $dbModel->tables->where('name', $tableName)->first();
-        if (!$table) {
-            $this->error("Table $tableName not found!");
-            return;
-        }
+        $table = DBTableCollection::getInstance()->getByName($tableName);
 
-        // 3. 生成基础模型文件
-        $this->generateModelFile($className, $dbModel, $table);
+        $replaces = [
+            '{{ importClasses }}' => $this->getImportClasses($table),
+            '{{ useTraits }}' => $this->getUseTraits($table),
+            '{{ className }}' => $className,
+            '{{ tableName }}' => $table->name,
+            '{{ comment }}' => $table->comment,
+            '{{ properties }}' => $this->getProperties($table),
+            '{{ fillable }}' => $this->getFillable($table),
+            '{{ hidden }}' => $this->getHidden($table),
+            '{{ casts }}' => $this->getCasts($table),
+            '{{ relations }}' => $this->getRelations($dbModel, $table),
+        ];
 
-        $this->info($namespace);
-    }
-
-    private function generateModelFile(string $className, DBModel $dBModel, DBTableModel $table): void
-    {
-        // 准备数据
-        $importClasses = $this->getImportClasses($table);
-        $useTraits = $this->getUseTraits($table);
-        $properties = $this->getProperties($table);
-        $fillable = $this->getFillable($table);
-        $hidden = $this->getHidden($table);
-        $casts = $this->getCasts($table);
-        $relations = $this->getRelations($dBModel, $table);
-
-        // 读取基础模型模板
-        $stub = File::get(__DIR__ . '/stubs/model.stub');
-
-        // 替换内容
-        $content = str_replace(
-            [
-                '{{ importClasses }}',
-                '{{ useTraits }}',
-                '{{ className }}',
-                '{{ tableName }}',
-                '{{ comment }}',
-                '{{ properties }}',
-                '{{ fillable }}',
-                '{{ hidden }}',
-                '{{ casts }}',
-                '{{ relations }}'
-            ],
-            [
-                $importClasses,
-                $useTraits,
-                $className,
-                $table->name,
-                $table->comment,
-                $properties,
-                $fillable,
-                $hidden,
-                $casts,
-                $relations
-            ],
-            $stub
-        );
-
-        // 确保目录存在
-        $directory = app_path('Models');
-        if (!File::exists($directory)) {
-            File::makeDirectory($directory, 0755, true);
-        }
-
-        // 写入文件
-        File::put($directory . '/' . $className . '.php', $content);
+        $this->GenFile('model.stub', $replaces, $namespace, $className, $force);
     }
 
     /**
@@ -232,6 +180,6 @@ class GenModelFileCommand extends Command
             }
         }
 
-        return implode("\n", $relations);
+        return implode("\n\t", $relations);
     }
 }

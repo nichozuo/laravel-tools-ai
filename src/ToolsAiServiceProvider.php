@@ -62,6 +62,7 @@ class ToolsAiServiceProvider extends ServiceProvider
             GenFiles\GenModelFileCommand::class,
             GenFiles\GenAllModelFileCommand::class,
             GenFiles\GenControllerFileCommand::class,
+            GenFiles\GenControllerTestFileCommand::class,
 
             Dump\DumpTableCommand::class,
         ]);

@@ -107,7 +107,8 @@ class DocsController extends Controller
 
                 // 构建路径对象
                 $pathItem = [
-                    'summary' => $action->title,
+                    'summary' => $action->action,
+                    'description' => $action->title,
                     'tags' => [$routeTag],
                 ];
 

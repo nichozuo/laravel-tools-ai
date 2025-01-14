@@ -22,8 +22,8 @@ class JsonResponseMiddleware
         // 获取原始响应内容
         $data = $response->original ?? null;
         // 如果响应中包含了success, errorMessage, status, 则直接返回
-        if (isset($data['success']) && isset($data['errorMessage']) && isset($data['status'])) {
-            return response()->json($data, $data['status']);
+        if (isset($data['success']) && isset($data['errorMessage'])) {
+            return response()->json($data);
         }
 
         // 如果是分页数据

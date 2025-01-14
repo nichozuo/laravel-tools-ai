@@ -7,6 +7,6 @@ if (!function_exists('ee')) {
      */
     function ee(string $message = "", ?int $code = 500): void
     {
-        abort($code, $message);
+        throw new Exception($message, $code);
     }
 }

@@ -72,10 +72,12 @@ class Handler extends ExceptionHandler
     {
         $debug = config('app.debug');
 
+        $status = 500;
+
         // 获取异常配置
         $defaults = [
             'success' => false,
-            'status' => 500,
+            'errorCode' => $e->getCode(),
             'errorMessage' => $e->getMessage(),
             'errorDetail' => []
         ];
@@ -84,40 +86,40 @@ class Handler extends ExceptionHandler
         $config = $defaults;
         switch (get_class($e)) {
             case AuthenticationException::class:
+                $status = 401;
                 $config = array_merge($defaults, [
-                    'status' => 401,
                     'errorMessage' => '未经授权'
                 ]);
                 break;
             case AuthorizationException::class:
+                $status = 403;
                 $config = array_merge($defaults, [
-                    'status' => 403,
                     'errorMessage' => '没有权限执行此操作'
                 ]);
                 break;
             case ValidationException::class:
+                $status = 422;
                 $config = array_merge($defaults, [
-                    'status' => 422,
                     'errorMessage' => '数据验证失败',
                     'errorDetail' => $e->errors()
                 ]);
                 break;
             case ModelNotFoundException::class:
             case NotFoundHttpException::class:
+                $status = 404;
                 $config = array_merge($defaults, [
-                    'status' => 404,
                     'errorMessage' => '请求的资源不存在'
                 ]);
                 break;
             case QueryException::class:
+                $status = 500;
                 $config = array_merge($defaults, [
-                    'status' => 500,
                     'errorMessage' => '数据库操作失败'
                 ]);
                 break;
             case HttpException::class:
+                $status = $e->getStatusCode();
                 $config = array_merge($defaults, [
-                    'status' => $e->getStatusCode(),
                     'errorMessage' => $e->getMessage()
                 ]);
                 break;
@@ -160,7 +162,7 @@ class Handler extends ExceptionHandler
                 'trace' => $trace
             ];
         }
-        return response()->json($config, $config['status']);
+        return response()->json($config, status: $status);
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace Zuoge\LaravelToolsAi\Commands\GenFiles;
 
+use Exception;
 use Zuoge\LaravelToolsAi\Collections\DBTableCollection;
 use Zuoge\LaravelToolsAi\Models\DBModel;
 use Zuoge\LaravelToolsAi\Models\DBTableModel;
@@ -27,6 +28,7 @@ class GenModelFileCommand extends BaseGenFileCommand
 
     /**
      * Execute the console command.
+     * @throws Exception
      */
     public function handle(): void
     {
@@ -45,10 +47,10 @@ class GenModelFileCommand extends BaseGenFileCommand
             '{{ importClasses }}' => $this->getImportClasses($table),
             '{{ useTraits }}' => $this->getUseTraits($table),
             '{{ className }}' => $className,
-            '{{ tableName }}' => $table->name,
-            '{{ comment }}' => $table->comment,
+            '{{ tableName }}' => $table->getTable(),
+            '{{ comment }}' => $table->getComment(),
             '{{ properties }}' => $this->getProperties($table),
-            '{{ fillable }}' => $this->getFillable($table),
+            '{{ fillable }}' => $table->getFillable(),
             '{{ hidden }}' => $this->getHidden($table),
             '{{ casts }}' => $this->getCasts($table),
             '{{ relations }}' => $this->getRelations($dbModel, $table),
@@ -62,7 +64,10 @@ class GenModelFileCommand extends BaseGenFileCommand
      */
     private function getImportClasses(DBTableModel $table): string
     {
-        $importClasses = ['use Illuminate\Database\Eloquent\Relations;'];
+        $importClasses = [
+            'use Illuminate\Database\Eloquent\Relations;',
+            'use Carbon\Carbon;'
+        ];
 
         if ($table->hasApiToken) {
             $importClasses[] = 'use Laravel\Sanctum\HasApiTokens;';
@@ -107,20 +112,6 @@ class GenModelFileCommand extends BaseGenFileCommand
     }
 
     /**
-     * 获取可填充字段
-     */
-    private function getFillable(DBTableModel $table): string
-    {
-        $fillable = [];
-        foreach ($table->columns as $column) {
-            if (!in_array($column->name, ['id', 'created_at', 'updated_at', 'deleted_at'])) {
-                $fillable[] = "'$column->name'";
-            }
-        }
-        return implode(', ', $fillable);
-    }
-
-    /**
      * 获取隐藏字段
      */
     private function getHidden(DBTableModel $table): string
@@ -146,14 +137,20 @@ class GenModelFileCommand extends BaseGenFileCommand
     private function getCasts(DBTableModel $table): string
     {
         $casts = [];
-        foreach ($table->columns as $column) {
+        $table->columns->each(function($column) use(&$casts) {
             if ($column->type === 'json') {
                 $casts[] = "'$column->name' => 'array'";
-            } elseif ($column->type === 'datetime' || $column->type === 'timestamp') {
-                $casts[] = "'$column->name' => 'datetime'";
             }
             // TODO 如果是Enum类型，则需要获取Enum的值
-        }
+        });
+//        foreach ($table->columns as $column) {
+//            if ($column->type === 'json') {
+//                $casts[] = "'$column->name' => 'array'";
+//            } elseif ($column->type === 'datetime' || $column->type === 'timestamp') {
+//                $casts[] = "'$column->name' => 'datetime'";
+//            }
+//            // TODO 如果是Enum类型，则需要获取Enum的值
+//        }
 
         if (empty($casts)) {
             return '';

@@ -53,4 +53,56 @@ class DBTableModel
     {
         $this->columns = collect();
     }
+
+    public function getTable(): string
+    {
+        return "protected \$table = '$this->name';";
+    }
+
+    public function getComment(): string
+    {
+        return "protected string \$comment = '$this->comment';";
+    }
+
+    public function getFillable(): string
+    {
+        $fillable = [];
+        foreach ($this->columns as $column) {
+            if (!in_array($column->name, ['id', 'created_at', 'updated_at', 'deleted_at'])) {
+                $fillable[] = "'$column->name'";
+            }
+        }
+        if (empty($fillable))
+            return '';
+
+        $fillableString = implode(', ', $fillable);
+        return "protected \$fillable = [$fillableString];";
+    }
+
+    /**
+     * 获取字段的验证规则字符串
+     * @param string|null $implodeStr
+     * @param bool|null $isInsert
+     * @return string
+     */
+    public function getValidateString(?string $implodeStr = "\n\t\t\t", ?bool $isInsert = false): string
+    {
+        $validateString = [];
+        $skipColumns = ['id', 'created_at', 'updated_at', 'deleted_at'];
+
+        foreach ($this->columns as $column) {
+            if (in_array($column->name, $skipColumns))
+                continue;
+
+            // 是否可空：1是否nullable，2是否有default
+            $required = $column->nullable || $column->default ? 'nullable' : 'required';
+            if ($isInsert) {
+                $validateString[] = "'$column->name' => '', # $column->comment";
+            } else {
+                $validateString[] = "'$column->name' => '$required|$column->typeInValidate', # $column->comment";
+            }
+        }
+
+        return implode($implodeStr, $validateString);
+    }
 }

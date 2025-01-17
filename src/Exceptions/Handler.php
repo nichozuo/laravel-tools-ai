@@ -72,7 +72,7 @@ class Handler extends ExceptionHandler
     {
         $debug = config('app.debug');
 
-        $status = 500;
+//        $status = 500;
 
         // 获取异常配置
         $defaults = [
@@ -86,19 +86,19 @@ class Handler extends ExceptionHandler
         $config = $defaults;
         switch (get_class($e)) {
             case AuthenticationException::class:
-                $status = 401;
+//                $status = 401;
                 $config = array_merge($defaults, [
                     'errorMessage' => '未经授权'
                 ]);
                 break;
             case AuthorizationException::class:
-                $status = 403;
+//                $status = 403;
                 $config = array_merge($defaults, [
                     'errorMessage' => '没有权限执行此操作'
                 ]);
                 break;
             case ValidationException::class:
-                $status = 422;
+//                $status = 422;
                 $config = array_merge($defaults, [
                     'errorMessage' => '数据验证失败',
                     'errorDetail' => $e->errors()
@@ -106,19 +106,19 @@ class Handler extends ExceptionHandler
                 break;
             case ModelNotFoundException::class:
             case NotFoundHttpException::class:
-                $status = 404;
+//                $status = 404;
                 $config = array_merge($defaults, [
                     'errorMessage' => '请求的资源不存在'
                 ]);
                 break;
             case QueryException::class:
-                $status = 500;
+//                $status = 500;
                 $config = array_merge($defaults, [
                     'errorMessage' => '数据库操作失败'
                 ]);
                 break;
             case HttpException::class:
-                $status = $e->getStatusCode();
+//                $status = $e->getStatusCode();
                 $config = array_merge($defaults, [
                     'errorMessage' => $e->getMessage()
                 ]);
@@ -132,7 +132,7 @@ class Handler extends ExceptionHandler
         if ($debug) {
             $trace = collect($e->getTrace())->map(function ($trace) {
                 // 过滤掉一些不必要的信息
-                if (str_contains($trace['file'], 'laravel/framework')) {
+                if (str_contains($trace['file'] ?? '', 'laravel/framework')) {
                     return null;
                 }
                 return [
@@ -162,7 +162,7 @@ class Handler extends ExceptionHandler
                 'trace' => $trace
             ];
         }
-        return response()->json($config, status: $status);
+        return response()->json($config);
     }
 
     /**

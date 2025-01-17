@@ -29,9 +29,15 @@ class DBTableColumnModel
 
     /**
      * 字段类型在属性中的表示
-     * 比如：bigint 是 numeric
+     * 比如：@property integer $id
      */
     public string $typeInProperty = '';
+
+    /**
+     * 字段类型在属性中的表示
+     * 比如：'id' => 'required|integer'
+     */
+    public string $typeInValidate = '';
 
     /**
      * 排序规则

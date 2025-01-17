@@ -134,7 +134,7 @@ class DocsController extends Controller
                             'description' => '成功',
                             'content' => [
                                 'application/json' => [
-                                    'schema' => json_decode($action->responseSchema, true)
+                                    'schema' => json_decode($action->responseSchema, associative: true)
                                 ]
                             ]
                         ]

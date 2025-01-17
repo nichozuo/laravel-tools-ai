@@ -51,24 +51,9 @@ class GenControllerFileCommand extends BaseGenFileCommand
             '{{ namespace }}' => $namespace,
             '{{ modelName }}' => $modelName,
             '{{ comment }}' => $table->comment,
-            '{{ validateString }}' => $this->getValidateString($table),
+            '{{ validateString }}' => $table->getValidateString(),
         ];
 
         $this->GenFile('controller.stub', $replaces, $namespace, $modelName . 'Controller', $force);
-    }
-
-    private function getValidateString(DBTableModel $table): string
-    {
-        $validateString = [];
-        $skipColumns = ['id', 'created_at', 'updated_at', 'deleted_at'];
-        foreach ($table->columns as $column) {
-            if (in_array($column->name, $skipColumns))
-                continue;
-
-            // 是否可空：1是否nullable，2是否有default
-            $required = $column->nullable || $column->default ? 'nullable' : 'required';
-            $validateString[] = "'$column->name' => '$required|$column->typeInProperty', # $column->comment";
-        }
-        return implode("\n\t\t\t", $validateString);
     }
 }

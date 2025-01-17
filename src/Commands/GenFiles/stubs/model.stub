@@ -10,9 +10,11 @@ namespace App\Models;
 class {{ className }} extends Base
 {
     {{ useTraits }}
-    protected $table = '{{ tableName }}';
-    protected string $comment = '{{ comment }}';
-    protected $fillable = [{{ fillable }}];
+
+    {{ tableName }}
+    {{ comment }}
+    {{ fillable }}
+
     {{ hidden }}
     {{ casts }}
     {{ relations }}

@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Zuoge\LaravelToolsAi\Collections;
 
 use Illuminate\Support\Facades\Schema;
+use Zuoge\LaravelToolsAi\Helpers\TypesHelper;
 use Zuoge\LaravelToolsAi\Models\DBModel;
 use Zuoge\LaravelToolsAi\Models\DBTableColumnModel;
 use Zuoge\LaravelToolsAi\Models\DBTableModel;
 use Illuminate\Support\Str;
+use Exception;
 
 /**
  * 数据库表集合类
@@ -75,11 +77,18 @@ class DBTableCollection
         return $this->dbModel;
     }
 
+    /**
+     * 根据表名获取表模型
+     * @param string $name 表名
+     * @return DBTableModel
+     * @throws Exception 如果表不存在
+     */
     public function getByName(string $name): DBTableModel
     {
         $table = $this->getCollection()->tables->where('name', $name)->first();
-        if (!$table)
+        if (!$table) {
             ee("Table $name not found!");
+        }
         return $table;
     }
 
@@ -112,6 +121,8 @@ class DBTableCollection
     /**
      * 解析表结构
      * 将表结构转换为标准的 DBTableModel 对象
+     * @param array $table 表信息数组
+     * @return DBTableModel
      */
     protected function parseTable(array $table): DBTableModel
     {
@@ -138,6 +149,8 @@ class DBTableCollection
     /**
      * 解析字段结构
      * 将字段结构转换为标准的 DBTableColumnModel 对象
+     * @param array $column 字段信息数组
+     * @return DBTableColumnModel
      */
     protected function parseColumn(array $column): DBTableColumnModel
     {
@@ -146,7 +159,8 @@ class DBTableCollection
         $model->name = $column['name'];
         $model->typeName = $column['type_name'];
         $model->type = $column['type'];
-        $model->typeInProperty = $this->getTypeInProperty($column['type_name']);
+        $model->typeInProperty = TypesHelper::mapMysqlTypeToPhpProperty($column);
+        $model->typeInValidate = TypesHelper::mapMysqlTypeToPhpValidate($column);
         $model->collation = $column['collation'] ?? null;
         $model->nullable = $column['nullable'];
         $model->default = $column['default'] ?? null;
@@ -158,20 +172,9 @@ class DBTableCollection
     }
 
     /**
-     * 获取字段类型在属性中的表示
-     * 根据字段类型名称返回对应的属性类型
-     */
-    protected function getTypeInProperty(string $typeName): string
-    {
-        return match ($typeName) {
-            'bigint', 'int', 'tinyint', 'smallint', 'mediumint' => 'numeric',
-            default => 'string',
-        };
-    }
-
-    /**
      * 解析表之间的关系
      * 根据字段名和类型推断表之间的关系
+     * @param DBModel $dbModel 数据库模型对象
      */
     protected function parseRelations(DBModel $dbModel): void
     {

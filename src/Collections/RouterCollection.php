@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Zuoge\LaravelToolsAi\Collections;
 
+use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use phpDocumentor\Reflection\DocBlockFactory;
@@ -11,6 +12,7 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
 use Symfony\Component\Finder\Finder;
+use Zuoge\LaravelToolsAi\Helpers\TypesHelper;
 use Zuoge\LaravelToolsAi\Models\ControllerModel;
 use Zuoge\LaravelToolsAi\Models\ControllerActionModel;
 
@@ -66,6 +68,12 @@ class RouterCollection
         return $this->collection;
     }
 
+    /**
+     * @param string $controllerClass
+     * @return ControllerModel|null
+     * @throws ReflectionException
+     * @throws Exception
+     */
     public function getByControllerClass(string $controllerClass): ?ControllerModel
     {
         $route = $this->getCollection()->where('controllerClass', $controllerClass)->first();
@@ -283,9 +291,8 @@ class RouterCollection
             $fieldName = $match[1];
             $rules = array_map('trim', explode('|', $match[2]));
             $comment = $match[3] ?? '';
-
             $property = [
-                'type' => $this->determineParameterType($rules),
+                'type' => TypesHelper::mapPhpValidateTypeToTsType($rules),
                 'description' => trim($comment),
                 'required' => in_array('required', $rules)
             ];
@@ -303,29 +310,6 @@ class RouterCollection
         }
 
         return $requestBody;
-    }
-
-    /**
-     * 根据规则确定参数类型
-     */
-    protected function determineParameterType(array $rules): string
-    {
-        $typeMap = [
-            'integer' => 'integer',
-            'numeric' => 'numeric',
-            'string' => 'string',
-            'boolean' => 'boolean',
-            'array' => 'array',
-        ];
-
-        foreach ($rules as $rule) {
-            $rule = trim($rule, "'");
-            if (isset($typeMap[$rule])) {
-                return $typeMap[$rule];
-            }
-        }
-
-        return 'string';
     }
 
     /**

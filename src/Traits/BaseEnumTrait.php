@@ -3,9 +3,26 @@
 namespace Zuoge\LaravelToolsAi\Traits;
 
 use ReflectionClass;
+use Exception;
 
 trait BaseEnumTrait
 {
+    /**
+     * @param array $params
+     * @param string $key
+     * @return void
+     * @throws Exception
+     */
+    public static function Check(array $params, string $key): void
+    {
+        if (!isset($params[$key]))
+            return;
+
+        if (!in_array($params[$key], array_column(static::cases(), 'value'))) {
+            ee($key . '参数错误');
+        }
+    }
+
     /**
      * 获取所有枚举值
      *
@@ -42,7 +59,7 @@ trait BaseEnumTrait
         $items = [];
         foreach (static::cases() as $case) {
             $items[] = sprintf(
-                "  '%s': {\"text\":\"%s\",\"color\":\"%s\",\"value\":\"%s\"}", 
+                "  '%s': {\"text\":\"%s\",\"color\":\"%s\",\"value\":\"%s\"}",
                 $case->value,
                 self::text()[$case->value],
                 self::colors()[$case->value],
@@ -56,4 +73,4 @@ trait BaseEnumTrait
             implode(",\n", $items)
         );
     }
-} 
+}

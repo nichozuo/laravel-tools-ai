@@ -33,6 +33,9 @@ use Closure;
  * @method down()
  * @method static whereNull(string $string)
  * @method static orderByDesc(string $string)
+ * @method static ancestorsAndSelf(mixed $parentId)
+ * @method syncPermissions(array $ids)
+ * @method getAllPermissions()
  */
 trait BaseModelTrait
 {

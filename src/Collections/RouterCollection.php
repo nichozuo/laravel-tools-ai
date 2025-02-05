@@ -18,7 +18,7 @@ use Zuoge\LaravelToolsAi\Models\ControllerActionModel;
 
 /**
  * 路由集合类
- * 
+ *
  * 用于收集和管理路由信息，主要功能：
  * 1. 扫描指定目录下的控制器文件
  * 2. 解析控制器方法的注解信息
@@ -281,27 +281,38 @@ class RouterCollection
             'required' => []
         ];
 
-        preg_match_all(
-            "/'([^']+)'\s*=>\s*'([^']+)'(?:\s*,\s*(?:#|\/\/)\s*(.+))?/m",
-            $validationRules,
-            $paramMatches,
-            PREG_SET_ORDER
-        );
-        foreach ($paramMatches as $match) {
-            $fieldName = $match[1];
-            $rules = array_map('trim', explode('|', $match[2]));
-            $comment = $match[3] ?? '';
-            $property = [
-                'type' => TypesHelper::mapPhpValidateTypeToTsType($rules),
-                'description' => trim($comment),
-                'required' => in_array('required', $rules)
-            ];
+        // 按行分割验证规则
+        $lines = explode("\n", $validationRules);
 
-            if ($property['required']) {
-                $requestBody['required'][] = $fieldName;
+        foreach ($lines as $line) {
+            // 去掉前面被注释的行
+            $line = preg_replace('/^\s*\/\/.*$/m', '', $line);
+            if (empty(trim($line))) {
+                continue;
             }
 
-            $requestBody['properties'][$fieldName] = $property;
+            preg_match(
+                "/'([^']+)'\s*=>\s*'([^']+)'(?:\s*,\s*(?:#|\/\/)\s*(.+))?/m",
+                $line,
+                $match
+            );
+
+            if ($match) {
+                $fieldName = $match[1];
+                $rules = array_map('trim', explode('|', $match[2]));
+                $comment = $match[3] ?? '';
+                $property = [
+                    'type' => TypesHelper::mapPhpValidateTypeToTsType($rules),
+                    'description' => trim($comment),
+                    'required' => in_array('required', $rules)
+                ];
+
+                if ($property['required']) {
+                    $requestBody['required'][] = $fieldName;
+                }
+
+                $requestBody['properties'][$fieldName] = $property;
+            }
         }
 
         // 如果required为空，则删除

@@ -129,12 +129,16 @@ class DocsController extends Controller
 
                 // 只有在有responseSchema时才添加
                 if ($action->responseSchema !== '') {
+                    // 读取json文件
+                    $filePath = app_path('Http/Responses/' . $action->responseSchema);
+                    $responseSchema = json_decode(file_get_contents($filePath), associative: true);
+
                     $pathItem['responses'] = [
                         '200' => [
                             'description' => '成功',
                             'content' => [
                                 'application/json' => [
-                                    'schema' => json_decode($action->responseSchema, associative: true)
+                                    'schema' => $responseSchema
                                 ]
                             ]
                         ]
